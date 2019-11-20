@@ -1,3 +1,8 @@
+#################################################
+# Developer: Vishnu Pathmanaban
+# Email: vpathman@andrew.cmu.edu
+#################################################
+
 from cmu_112_graphics import *
 from tkinter import *
 from PIL import Image
@@ -136,6 +141,7 @@ class Board(object):
         self.board[0][7] = Rook(True, (0,7), spritestrip, self.size)
         self.board[7][7] = Rook(False, (7,7), spritestrip, self.size)
 
+    #determines selected cell
     def cellSelection(self, x, y):
         for row in range(0,8):
             for col in range(0,8):
@@ -174,6 +180,7 @@ class GameMode(Mode):
         mode.board = Board(scaledSpritestrip, scale)
         mode.selectedPiece = None
 
+    #basic piece movement and capture
     def mousePressed(mode, event):
         mode.board.cellSelection(event.x, event.y)
         row = mode.board.selected[0]
@@ -188,6 +195,7 @@ class GameMode(Mode):
             mode.board.selected = (-1,-1)
             mode.selectedPiece = None
 
+    #clear selection
     def keyPressed(mode, event):
         if event.key == 'c':
             mode.board.selected = (-1,-1)
@@ -196,6 +204,7 @@ class GameMode(Mode):
     def redrawAll(mode, canvas):
         mode.board.draw(canvas)
 
+#ModalApp from https://www.cs.cmu.edu/~112/notes/notes-animations-part2.html
 class ChessSensei(ModalApp):
     def appStarted(app):
         app.gameMode = GameMode()
