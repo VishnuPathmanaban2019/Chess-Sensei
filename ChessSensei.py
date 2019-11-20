@@ -32,9 +32,9 @@ class Rook(Piece):
 
     def __repr__(self):
         if(self.black):
-            return f'Black Rook @ Row:{self.position[0]} Col:{self.position[1]}'
+            return f'BR{self.position}'
         else:
-            return f'White Rook @ Row:{self.position[0]} Col:{self.position[1]}'
+            return f'WR{self.position}'
     
 class Knight(Piece):
     def __init__(self, black, position, spritestrip, size):
@@ -48,9 +48,9 @@ class Knight(Piece):
 
     def __repr__(self):
         if(self.black):
-            return f'Black Knight @ Row:{self.position[0]} Col:{self.position[1]}'
+            return f'BN{self.position}'
         else:
-            return f'White Knight @ Row:{self.position[0]} Col:{self.position[1]}'
+            return f'WN{self.position}'
     
 class Bishop(Piece):
     def __init__(self, black, position, spritestrip, size):
@@ -64,9 +64,9 @@ class Bishop(Piece):
 
     def __repr__(self):
         if(self.black):
-            return f'Black Bishop @ Row:{self.position[0]} Col:{self.position[1]}'
+            return f'BB{self.position}'
         else:
-            return f'White Bishop @ Row:{self.position[0]} Col:{self.position[1]}'
+            return f'WB{self.position}'
     
 class Queen(Piece):
     def __init__(self, black, position, spritestrip, size):
@@ -80,9 +80,9 @@ class Queen(Piece):
 
     def __repr__(self):
         if(self.black):
-            return f'Black Queen @ Row:{self.position[0]} Col:{self.position[1]}'
+            return f'BQ{self.position}'
         else:
-            return f'White Queen @ Row:{self.position[0]} Col:{self.position[1]}'
+            return f'WQ{self.position}'
 
 class King(Piece):
     def __init__(self, black, position, spritestrip, size):
@@ -96,9 +96,9 @@ class King(Piece):
 
     def __repr__(self):
         if(self.black):
-            return f'Black King @ Row:{self.position[0]} Col:{self.position[1]}'
+            return f'BK{self.position}'
         else:
-            return f'White King @ Row:{self.position[0]} Col:{self.position[1]}'
+            return f'WK{self.position}'
 
 class Pawn(Piece):
     def __init__(self, black, position, spritestrip, size):
@@ -112,9 +112,9 @@ class Pawn(Piece):
 
     def __repr__(self):
         if(self.black):
-            return f'Black Pawn @ Row:{self.position[0]} Col:{self.position[1]}'
+            return f'BP{self.position}'
         else:
-            return f'White Pawn @ Row:{self.position[0]} Col:{self.position[1]}'
+            return f'WP{self.position}'
 
 class Board(object):
     def __init__(self, spritestrip, scale):
