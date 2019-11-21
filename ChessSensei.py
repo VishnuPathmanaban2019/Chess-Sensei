@@ -2,7 +2,14 @@
 # Developer: Vishnu Pathmanaban
 # Email: vpathman@andrew.cmu.edu
 #################################################
+'''
+TODO
+- Move Generation
+- King Management
+'''
 
+#graphics framework from CMU 15-112
+#https://www.cs.cmu.edu/~112/notes/notes-animations-part2.html
 from cmu_112_graphics import *
 from tkinter import *
 from PIL import Image
@@ -20,6 +27,11 @@ class Piece(object):
         y = self.position[0]*self.size + self.size//2
         canvas.create_image(x, y, image=ImageTk.PhotoImage(self.sprite))
 
+    def legalMove(self, board, row, col):
+        target = board[row][col]
+        if target != None and target.black==self.black:
+            return False
+
 class Rook(Piece):
     def __init__(self, black, position, spritestrip, size):
         super().__init__(black, position, spritestrip, size)
@@ -35,7 +47,35 @@ class Rook(Piece):
             return f'BR{self.position}'
         else:
             return f'WR{self.position}'
-    
+
+    def legalMove(self, board, row, col):
+        if(super().legalMove(board, row, col)==False):
+            return False
+        oldRow=self.position[0]
+        oldCol=self.position[1]
+        if row==oldRow:
+            if col<oldCol:
+                for i in range(col+1, oldCol):
+                    if board[row][i] != None:
+                        return False
+            elif col>oldCol:
+                for i in range(col-1, oldCol, -1):
+                    if board[row][i] != None:
+                        return False
+            return True
+        elif col==oldCol:
+            if row<oldRow:
+                for i in range(row+1, oldRow):
+                    if board[i][col] != None:
+                        return False
+            elif row>oldRow:
+                for i in range(row-1, oldRow, -1):
+                    if board[i][col] != None:
+                        return False
+            return True
+        else:
+            return False
+        
 class Knight(Piece):
     def __init__(self, black, position, spritestrip, size):
         super().__init__(black, position, spritestrip, size)
@@ -51,6 +91,14 @@ class Knight(Piece):
             return f'BN{self.position}'
         else:
             return f'WN{self.position}'
+
+    def legalMove(self, board, row, col):
+        if(super().legalMove(board, row, col)==False):
+            return False
+        oldRow=self.position[0]
+        oldCol=self.position[1]
+        return ((abs(col-oldCol)==2 and abs(row-oldRow)==1) or
+                (abs(col-oldCol)==1 and abs(row-oldRow)==2))
     
 class Bishop(Piece):
     def __init__(self, black, position, spritestrip, size):
@@ -67,6 +115,34 @@ class Bishop(Piece):
             return f'BB{self.position}'
         else:
             return f'WB{self.position}'
+
+    def legalMove(self, board, row, col):
+        if(super().legalMove(board, row, col)==False):
+            return False
+        oldRow=self.position[0]
+        oldCol=self.position[1]
+        if(oldRow+oldCol == row+col):
+            if row<oldRow:
+                for i in range(1,oldRow-row):
+                        if board[oldRow-i][oldCol+i] != None:
+                            return False
+            elif row>oldRow:
+                for i in range(1,row-oldRow):
+                        if board[oldRow+i][oldCol-i] != None:
+                            return False
+            return True
+        elif(oldRow-oldCol == row-col):
+            if row<oldRow:
+                for i in range(1,oldRow-row):
+                        if board[oldRow-i][oldCol-i] != None:
+                            return False
+            elif row>oldRow:
+                for i in range(1,row-oldRow):
+                        if board[oldRow+i][oldCol+i] != None:
+                            return False
+            return True
+        else:
+            return False
     
 class Queen(Piece):
     def __init__(self, black, position, spritestrip, size):
@@ -84,6 +160,54 @@ class Queen(Piece):
         else:
             return f'WQ{self.position}'
 
+    def legalMove(self, board, row, col):
+        if(super().legalMove(board, row, col)==False):
+            return False
+        oldRow=self.position[0]
+        oldCol=self.position[1]
+        if row==oldRow:
+            if col<oldCol:
+                for i in range(col+1, oldCol):
+                    if board[row][i] != None:
+                        return False
+            elif col>oldCol:
+                for i in range(col-1, oldCol, -1):
+                    if board[row][i] != None:
+                        return False
+            return True
+        elif col==oldCol:
+            if row<oldRow:
+                for i in range(row+1, oldRow):
+                    if board[i][col] != None:
+                        return False
+            elif row>oldRow:
+                for i in range(row-1, oldRow, -1):
+                    if board[i][col] != None:
+                        return False
+            return True
+        elif(oldRow+oldCol == row+col):
+            if row<oldRow:
+                for i in range(1,oldRow-row):
+                        if board[oldRow-i][oldCol+i] != None:
+                            return False
+            elif row>oldRow:
+                for i in range(1,row-oldRow):
+                        if board[oldRow+i][oldCol-i] != None:
+                            return False
+            return True
+        elif(oldRow-oldCol == row-col):
+            if row<oldRow:
+                for i in range(1,oldRow-row):
+                        if board[oldRow-i][oldCol-i] != None:
+                            return False
+            elif row>oldRow:
+                for i in range(1,row-oldRow):
+                        if board[oldRow+i][oldCol+i] != None:
+                            return False
+            return True
+        else:
+            return False
+
 class King(Piece):
     def __init__(self, black, position, spritestrip, size):
         super().__init__(black, position, spritestrip, size)
@@ -100,6 +224,13 @@ class King(Piece):
         else:
             return f'WK{self.position}'
 
+    def legalMove(self, board, row, col):
+        if(super().legalMove(board, row, col)==False):
+            return False
+        oldRow=self.position[0]
+        oldCol=self.position[1]
+        return (abs(col-oldCol)<=1 and abs(row-oldRow)<=1)
+
 class Pawn(Piece):
     def __init__(self, black, position, spritestrip, size):
         super().__init__(black, position, spritestrip, size)
@@ -115,6 +246,25 @@ class Pawn(Piece):
             return f'BP{self.position}'
         else:
             return f'WP{self.position}'
+
+    def legalMove(self, board, row, col):
+        if(super().legalMove(board, row, col)==False):
+            return False
+        oldRow=self.position[0]
+        oldCol=self.position[1]
+        if(self.black):
+            return((oldRow==1 and col==oldCol and row==oldRow+2
+                    and board[oldRow+1][oldCol]==None) or
+                    (row==oldRow+1 and col==oldCol and board[row][col]==None)
+                    or (row==oldRow+1 and abs(oldCol-col)==1 and
+                    board[row][col]!=None))
+        else:
+            return((oldRow==6 and col==oldCol and row==oldRow-2
+                    and board[oldRow-1][oldCol]==None) or
+                    (row==oldRow-1 and col==oldCol and board[row][col]==None)
+                    or (row==oldRow-1 and abs(oldCol-col)==1 and
+                    board[row][col]!=None))
+            
 
 class Board(object):
     def __init__(self, spritestrip, scale):
@@ -179,6 +329,7 @@ class GameMode(Mode):
         scaledSpritestrip = mode.scaleImage(spritestrip, scale)
         mode.board = Board(scaledSpritestrip, scale)
         mode.selectedPiece = None
+        mode.blackTurn = False
 
     #basic piece movement and capture
     def mousePressed(mode, event):
@@ -188,12 +339,24 @@ class GameMode(Mode):
         if (mode.selectedPiece == None):
             mode.selectedPiece = mode.board.board[row][col]
         else:
-            (oldRow, oldCol) = mode.selectedPiece.position
-            mode.board.board[oldRow][oldCol] = None
-            mode.board.board[row][col] = mode.selectedPiece
-            mode.selectedPiece.position = (row,col)
-            mode.board.selected = (-1,-1)
-            mode.selectedPiece = None
+            if(mode.selectedPiece.black==mode.blackTurn):
+                if mode.selectedPiece.legalMove(mode.board.board, row, col):
+                    (oldRow, oldCol) = mode.selectedPiece.position
+                    mode.board.board[oldRow][oldCol] = None
+                    mode.board.board[row][col] = mode.selectedPiece
+                    mode.selectedPiece.position = (row,col)
+                    mode.board.selected = (-1,-1)
+                    mode.selectedPiece = None
+                    if mode.blackTurn:
+                        mode.blackTurn = False
+                    else:
+                        mode.blackTurn = True
+                else:
+                    mode.board.selected = (-1,-1)
+                    mode.selectedPiece = None
+            else:
+                mode.board.selected = (-1,-1)
+                mode.selectedPiece = None
 
     #clear selection
     def keyPressed(mode, event):
@@ -211,7 +374,7 @@ class ChessSensei(ModalApp):
         app.setActiveMode(app.gameMode)
         
 def runChessSensei():
-    size = 1000
+    size = 800
     app = ChessSensei(width=size, height=size)
 
 runChessSensei()
