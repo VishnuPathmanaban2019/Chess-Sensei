@@ -570,7 +570,8 @@ class GameMode(Mode):
                     #checkmate error case
                     if(len(possibleBoards)==0):
                         print('CHECKMATE')
-                    mode.board.board = myDeepCopy(random.choice(possibleBoards))
+                    mode.board.board = myDeepCopy(
+                        GameMode.boardEvaluation(mode,possibleBoards))
                     GameMode.updatePositions(mode)
                     if(mode.checkExists and
                        mode.board.board != oldBoard):
@@ -683,9 +684,26 @@ class GameMode(Mode):
                                                 row, col, tempPiece)
         return possibleMoves
 
-    #generates tree of board posibilities to certain depth
-    def boardEvaluation(mode):
-        pass
+    #selects best board
+    def boardEvaluation(mode, possibleMoves):
+        bestBoard = None
+        bestValue = -9999
+        for board in possibleMoves:
+            boardCopy = myDeepCopy(board)
+            boardValue = 0
+            for row in range(8):
+                for col in range(8):
+                    piece = boardCopy[row][col]
+                    if piece != None:
+                        if piece.black:
+                            boardValue+=piece.value
+                        else:
+                            boardValue-=piece.value
+            if boardValue > bestValue:
+                bestValue = boardValue
+                bestBoard = boardCopy
+        return bestBoard
+                            
 
     #key control
     def keyPressed(mode, event):
