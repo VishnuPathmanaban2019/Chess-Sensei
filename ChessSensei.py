@@ -7,11 +7,10 @@ IGNORING:
 - Castling
 - Pawn Promotion
 - En Passant
-MINOR BUGS:
-- False Positive Checkmate?
-- AI Pawn Skips Piece?
-MAJOR BUGS:
+BUGS:
 - None
+TODO:
+- Minimax Depth 2
 '''
 
 #graphics framework from CMU 15-112
@@ -396,22 +395,20 @@ class Pawn(Piece):
                     and board[targetRow][targetCol] != None and
                     board[targetRow][targetCol].black != self.black):
                     legalMoves.add((targetRow,targetCol))
+            targetRow = oldRow+1
+            targetCol = oldCol
+            if (targetRow>=0 and targetRow<=7
+                and targetCol>=0 and targetCol<=7
+                and board[targetRow][targetCol] == None):
+                legalMoves.add((targetRow,targetCol))
             if(oldRow==1):
-                moves = {(1,0),(2,0)}
-                for move in moves:
-                    targetRow = oldRow+move[0]
-                    targetCol = oldCol+move[1]
-                    if (targetRow>=0 and targetRow<=7
-                        and targetCol>=0 and targetCol<=7
-                        and board[targetRow][targetCol] == None):
-                        legalMoves.add((targetRow,targetCol))
-            else:
-                targetRow = oldRow+1
+                targetRow = oldRow+2
                 targetCol = oldCol
                 if (targetRow>=0 and targetRow<=7
                     and targetCol>=0 and targetCol<=7
-                    and board[targetRow][targetCol] == None):
-                    legalMoves.add((targetRow,targetCol))
+                    and board[targetRow][targetCol] == None
+                    and board[targetRow-1][targetCol] == None):
+                    legalMoves.add((targetRow,targetCol))             
         else:
             moves = {(-1,1),(-1,-1)}
             for move in moves:
@@ -422,22 +419,20 @@ class Pawn(Piece):
                     and board[targetRow][targetCol] != None and
                     board[targetRow][targetCol].black != self.black):
                     legalMoves.add((targetRow,targetCol))
+            targetRow = oldRow-1
+            targetCol = oldCol
+            if (targetRow>=0 and targetRow<=7
+                and targetCol>=0 and targetCol<=7
+                and board[targetRow][targetCol] == None):
+                legalMoves.add((targetRow,targetCol))
             if(oldRow==6):
-                moves = {(-1,0),(-2,0)}
-                for move in moves:
-                    targetRow = oldRow+move[0]
-                    targetCol = oldCol+move[1]
-                    if (targetRow>=0 and targetRow<=7
-                        and targetCol>=0 and targetCol<=7
-                        and board[targetRow][targetCol] == None):
-                        legalMoves.add((targetRow,targetCol))
-            else:
-                targetRow = oldRow-1
+                targetRow = oldRow-2
                 targetCol = oldCol
                 if (targetRow>=0 and targetRow<=7
                     and targetCol>=0 and targetCol<=7
-                    and board[targetRow][targetCol] == None):
-                    legalMoves.add((targetRow,targetCol))
+                    and board[targetRow][targetCol] == None
+                    and board[targetRow+1][targetCol] == None):
+                    legalMoves.add((targetRow,targetCol))  
         return legalMoves
 
 class Board(object):
@@ -551,7 +546,7 @@ class GameMode(Mode):
         mode.blackTurn = False
         mode.checkExists = False
         
-    #mouse control and selection (IN PROGRESS)
+    #mouse control and selection 
     def mousePressed(mode, event):
         mode.board.cellSelection(event.x, event.y)
         row = mode.board.selected[0]
@@ -561,22 +556,21 @@ class GameMode(Mode):
         else:
             if(mode.selectedPiece.black==mode.blackTurn and
             (row,col) in mode.selectedPiece.legalMoves(mode.board.board)):
+                #YOUR MOVE
                 oldBoard = myDeepCopy(mode.board.board)
                 GameMode.completeLegalMove(mode, row, col)
-                #AI MOVE
+                #AI MOVE (IN PROGRESS)
                 if(mode.board.board != oldBoard):
                     oldBoard = myDeepCopy(mode.board.board)
-                    possibleBoards = GameMode.moveGeneration(mode)
-                    #checkmate error case
-                    if(len(possibleBoards)==0):
-                        print('CHECKMATE')
+                    #minimax
                     mode.board.board = myDeepCopy(
-                        GameMode.boardEvaluation(mode,possibleBoards))
+                        GameMode.minimax(mode, 3, True))
                     GameMode.updatePositions(mode)
+                    #removes check if board updated legally
                     if(mode.checkExists and
                        mode.board.board != oldBoard):
                         mode.checkExists = False
-                    GameMode.switchTurns(mode)
+                    mode.blackTurn = False
             mode.board.selected = (-1,-1)
             mode.selectedPiece = None
 
@@ -601,7 +595,7 @@ class GameMode(Mode):
         #new check
         if(mode.board.check()!='none' and mode.checkExists==False):
             mode.checkExists = True
-            #check on player moving
+            #check on player moving currently
             if((mode.board.check()=='black' and mode.blackTurn) or
                (mode.board.check()=='white' and mode.blackTurn==False)):
                 GameMode.revertMove(mode, row, col, oldRow, oldCol,
@@ -614,7 +608,7 @@ class GameMode(Mode):
         elif(mode.board.check()!='none' and mode.checkExists==True):
             GameMode.revertMove(mode, row, col, oldRow, oldCol,
                                     tempPiece)
-        #check legal move
+        #chess legal move
         else:
             mode.checkExists = False
             GameMode.switchTurns(mode)
@@ -649,13 +643,13 @@ class GameMode(Mode):
             mode.blackTurn = True
 
     #generates all possible boards for one state
-    def moveGeneration(mode):
-        possibleMoves = []
+    def boardGeneration(mode, blackSide=True):
+        possibleBoards = []
         oldBoard = myDeepCopy(mode.board.board)
         for row in range(8):
             for col in range(8):
                 piece = mode.board.board[row][col]
-                if(piece != None and piece.black):
+                if(piece != None and piece.black==blackSide):
                     mode.selectedPiece = piece
                     for move in mode.selectedPiece.legalMoves(mode.board.board):
                         targetRow = move[0]
@@ -666,9 +660,9 @@ class GameMode(Mode):
                                                        targetRow, targetCol)
                             if (mode.board.board != oldBoard and
                                 mode.checkExists == False):
-                                possibleMoves.append(
+                                possibleBoards.append(
                                     myDeepCopy(mode.board.board))
-                                mode.blackTurn = True
+                                mode.blackTurn = blackSide
                                 GameMode.revertMove(
                                     mode, targetRow, targetCol,
                                     row, col, tempPiece)
@@ -677,34 +671,105 @@ class GameMode(Mode):
                             GameMode.completeLegalMove(mode,
                                                        targetRow, targetCol)
                             if (mode.board.board != oldBoard):
-                                possibleMoves.append(
+                                possibleBoards.append(
                                     myDeepCopy(mode.board.board))
-                                mode.blackTurn = True
+                                mode.blackTurn = blackSide
                                 GameMode.revertMove(mode, targetRow, targetCol,
                                                 row, col, tempPiece)
-        return possibleMoves
+        return possibleBoards
 
-    #selects best board
-    def boardEvaluation(mode, possibleMoves):
-        bestBoard = None
-        bestValue = -9999
-        for board in possibleMoves:
-            boardCopy = myDeepCopy(board)
-            boardValue = 0
-            for row in range(8):
-                for col in range(8):
-                    piece = boardCopy[row][col]
-                    if piece != None:
-                        if piece.black:
-                            boardValue+=piece.value
-                        else:
-                            boardValue-=piece.value
-            if boardValue > bestValue:
-                bestValue = boardValue
-                bestBoard = boardCopy
-        return bestBoard
-                            
-
+    #returns board value
+    def boardValue(mode, board, blackSide=True):
+        boardCopy = myDeepCopy(board)
+        boardValue = 0
+        for row in range(8):
+            for col in range(8):
+                piece = boardCopy[row][col]
+                if piece != None:
+                    if ((piece.black and blackSide) or
+                        (piece.black==False and blackSide==False)):
+                        boardValue += piece.value
+                    else:
+                        boardValue -= piece.value
+        return boardValue
+        
+    #minimax
+    def minimax(mode, searchDepth, blackSide, depth=0):
+        if(blackSide): whiteSide=False
+        else: whiteSide=True
+        depth += 1
+        #END NODES
+        if(depth>searchDepth):
+            return GameMode.boardValue(mode, mode.board.board, blackSide)
+        #FINAL SELECTION
+        elif(depth==1):
+            bestValue = -9999
+            bestBoard = None
+            pathValues = {}
+            possibleBoards = GameMode.boardGeneration(mode, blackSide)
+            if(len(possibleBoards)==0):
+                print('CHECKMATE FINAL')
+            for board in possibleBoards:
+                oldBoard = myDeepCopy(mode.board.board)
+                #NEW BOARD
+                mode.board.board = myDeepCopy(board)
+                GameMode.updatePositions(mode)
+                #NEXT LEVEL
+                mode.blackTurn = whiteSide
+                pathValues[str(board)]=GameMode.minimax(mode, searchDepth,
+                                                        blackSide, depth)
+                #REVERT
+                mode.board.board = myDeepCopy(oldBoard)
+                GameMode.updatePositions(mode)
+            for path in pathValues:
+                if pathValues[path] > bestValue:
+                    bestValue = pathValues[path]
+                    bestBoard = path
+            for board in possibleBoards:
+                if str(board) == bestBoard:
+                    bestBoard = myDeepCopy(board)
+            return bestBoard
+        #MAX
+        elif(depth%2==1):
+            maxList=[]
+            possibleBoards = GameMode.boardGeneration(mode, blackSide)
+            if(len(possibleBoards)==0):
+                print('AVOIDED BLACK CHECKMATE')
+                return -9999
+            for board in possibleBoards:
+                oldBoard = myDeepCopy(mode.board.board)
+                #NEW BOARD
+                mode.board.board = myDeepCopy(board)
+                GameMode.updatePositions(mode)
+                #NEXT LEVEL
+                mode.blackTurn = whiteSide
+                maxList.append(GameMode.minimax(mode, searchDepth,
+                                                blackSide, depth))
+                #REVERT
+                mode.board.board = myDeepCopy(oldBoard)
+                GameMode.updatePositions(mode)
+            return max(maxList)
+        #MIN
+        else:
+            minList=[]
+            possibleBoards = GameMode.boardGeneration(mode, whiteSide)
+            if(len(possibleBoards)==0):
+                print('PREDICTED WHITE CHECKMATE')
+                return 9999
+            for board in possibleBoards:
+                oldBoard = myDeepCopy(mode.board.board)
+                #NEW BOARD
+                mode.board.board = myDeepCopy(board)
+                GameMode.updatePositions(mode)
+                #NEXT LEVEL
+                mode.blackTurn = blackSide
+                minList.append(GameMode.minimax(mode, searchDepth,
+                                                blackSide, depth))
+                #REVERT
+                mode.board.board = myDeepCopy(oldBoard)
+                GameMode.updatePositions(mode)
+            return min(minList)
+                
     #key control
     def keyPressed(mode, event):
         #cancel selection
