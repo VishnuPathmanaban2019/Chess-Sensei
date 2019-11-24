@@ -10,7 +10,7 @@ IGNORING:
 BUGS:
 - None
 TODO:
-- Minimax Depth 2
+- Alpha Beta Pruning
 '''
 
 #graphics framework from CMU 15-112
@@ -546,7 +546,7 @@ class GameMode(Mode):
         mode.blackTurn = False
         mode.checkExists = False
         
-    #mouse control and selection 
+    #MAIN GAME
     def mousePressed(mode, event):
         mode.board.cellSelection(event.x, event.y)
         row = mode.board.selected[0]
@@ -564,7 +564,7 @@ class GameMode(Mode):
                     oldBoard = myDeepCopy(mode.board.board)
                     #minimax
                     mode.board.board = myDeepCopy(
-                        GameMode.minimax(mode, 3, True))
+                        GameMode.minimax(mode, 2, True))
                     GameMode.updatePositions(mode)
                     #removes check if board updated legally
                     if(mode.checkExists and
@@ -734,8 +734,8 @@ class GameMode(Mode):
             maxList=[]
             possibleBoards = GameMode.boardGeneration(mode, blackSide)
             if(len(possibleBoards)==0):
-                print('AVOIDED BLACK CHECKMATE')
-                return -9999
+                print('AVOIDED SELF CHECKMATE')
+                return 9999
             for board in possibleBoards:
                 oldBoard = myDeepCopy(mode.board.board)
                 #NEW BOARD
@@ -754,8 +754,8 @@ class GameMode(Mode):
             minList=[]
             possibleBoards = GameMode.boardGeneration(mode, whiteSide)
             if(len(possibleBoards)==0):
-                print('PREDICTED WHITE CHECKMATE')
-                return 9999
+                print('PREDICTED OPPONENT CHECKMATE')
+                return -9999
             for board in possibleBoards:
                 oldBoard = myDeepCopy(mode.board.board)
                 #NEW BOARD
@@ -765,6 +765,98 @@ class GameMode(Mode):
                 mode.blackTurn = blackSide
                 minList.append(GameMode.minimax(mode, searchDepth,
                                                 blackSide, depth))
+                #REVERT
+                mode.board.board = myDeepCopy(oldBoard)
+                GameMode.updatePositions(mode)
+            return min(minList)
+
+    #minimax with alpha beta pruning (IN PROGRESS)
+    def pruningMinimax(mode, searchDepth, blackSide, depth=0, alpha=-9999, beta=9999):
+        if(blackSide): whiteSide=False
+        else: whiteSide=True
+        depth += 1
+        #END NODES
+        if(depth>searchDepth):
+            return GameMode.boardValue(mode, mode.board.board, blackSide)
+        #FINAL SELECTION
+        elif(depth==1):
+            bestValue = -9999
+            bestBoard = None
+            pathValues = {}
+            possibleBoards = GameMode.boardGeneration(mode, blackSide)
+            if(len(possibleBoards)==0):
+                print('CHECKMATE FINAL')
+            for board in possibleBoards:
+                oldBoard = myDeepCopy(mode.board.board)
+                #NEW BOARD
+                mode.board.board = myDeepCopy(board)
+                GameMode.updatePositions(mode)
+                #NEXT LEVEL
+                mode.blackTurn = whiteSide
+                value = GameMode.pruningMinimax(mode, searchDepth,
+                                                blackSide, depth,
+                                                alpha, beta)
+                if(value<alpha):
+                    break
+                pathValues[str(board)] = value
+                alpha = value
+                #REVERT
+                mode.board.board = myDeepCopy(oldBoard)
+                GameMode.updatePositions(mode)
+            for path in pathValues:
+                if pathValues[path] > bestValue:
+                    bestValue = pathValues[path]
+                    bestBoard = path
+            for board in possibleBoards:
+                if str(board) == bestBoard:
+                    bestBoard = myDeepCopy(board)
+            return bestBoard
+        #MAX
+        elif(depth%2==1):
+            maxList=[]
+            possibleBoards = GameMode.boardGeneration(mode, blackSide)
+            if(len(possibleBoards)==0):
+                print('AVOIDED SELF CHECKMATE')
+                return 9999
+            for board in possibleBoards:
+                oldBoard = myDeepCopy(mode.board.board)
+                #NEW BOARD
+                mode.board.board = myDeepCopy(board)
+                GameMode.updatePositions(mode)
+                #NEXT LEVEL
+                mode.blackTurn = whiteSide
+                value = GameMode.pruningMinimax(mode, searchDepth,
+                                                blackSide, depth,
+                                                alpha, beta)
+                if(value<alpha):
+                    break
+                maxList.append(value)
+                alpha = value
+                #REVERT
+                mode.board.board = myDeepCopy(oldBoard)
+                GameMode.updatePositions(mode)
+            return max(maxList)
+        #MIN
+        else:
+            minList=[]
+            possibleBoards = GameMode.boardGeneration(mode, whiteSide)
+            if(len(possibleBoards)==0):
+                print('PREDICTED OPPONENT CHECKMATE')
+                return -9999
+            for board in possibleBoards:
+                oldBoard = myDeepCopy(mode.board.board)
+                #NEW BOARD
+                mode.board.board = myDeepCopy(board)
+                GameMode.updatePositions(mode)
+                #NEXT LEVEL
+                mode.blackTurn = blackSide
+                value = GameMode.pruningMinimax(mode, searchDepth,
+                                                blackSide, depth,
+                                                alpha, beta)
+                if(value>beta):
+                    break
+                minList.append(value)
+                beta = value
                 #REVERT
                 mode.board.board = myDeepCopy(oldBoard)
                 GameMode.updatePositions(mode)
