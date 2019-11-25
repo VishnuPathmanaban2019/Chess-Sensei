@@ -10,7 +10,10 @@ IGNORING:
 BUGS:
 - None
 TODO:
-- Alpha Beta Pruning
+- Mode UI (TP2)
+- Highlight Advice (TP3)
+- Counter Check (TP3)
+- Position Evaluation (TP3)
 '''
 
 #graphics framework from CMU 15-112
@@ -475,7 +478,7 @@ class Board(object):
     def __repr__(self):
         return str(print2dList(self.board))
 
-    #determines if either king is in check
+    #determines if either king is in check (REVIEW)
     def check(self):
         for row in range(8):
             for col in range(8):
@@ -487,6 +490,26 @@ class Board(object):
                     elif(self.blackKingPosition in item.legalMoves(self.board)):
                         return 'black'
         return 'none'
+
+    '''#determines if either king is in check
+    def check(self):
+        checked = 'N'
+        for row in range(8):
+            for col in range(8):
+                item = self.board[row][col]
+                if(item != None):
+                    if(item.black and
+                       self.whiteKingPosition in item.legalMoves(self.board)):
+                        if(checked == 'BC'):
+                            checked = 'BWC'
+                        else:
+                            checked = 'WC'
+                    elif(self.blackKingPosition in item.legalMoves(self.board)):
+                        if(checked == 'WC'):
+                            checked = 'BWC'
+                        else:
+                            checked = 'BC'
+        return checked'''
 
     #determines selected cell
     def cellSelection(self, x, y):
@@ -546,7 +569,7 @@ class GameMode(Mode):
         mode.blackTurn = False
         mode.checkExists = False
         
-    #MAIN GAME
+    #MAIN GAME (REVIEW)
     def mousePressed(mode, event):
         mode.board.cellSelection(event.x, event.y)
         row = mode.board.selected[0]
@@ -562,15 +585,16 @@ class GameMode(Mode):
                 #AI MOVE (IN PROGRESS)
                 if(mode.board.board != oldBoard):
                     oldBoard = myDeepCopy(mode.board.board)
-                    #minimax
+                    #minimax move
                     mode.board.board = myDeepCopy(
-                        GameMode.minimax(mode, 2, True))
+                        GameMode.pruningMinimax(mode, 3, True))
                     GameMode.updatePositions(mode)
                     #removes check if board updated legally
                     if(mode.checkExists and
                        mode.board.board != oldBoard):
                         mode.checkExists = False
                     mode.blackTurn = False
+            #remove selection
             mode.board.selected = (-1,-1)
             mode.selectedPiece = None
 
@@ -587,22 +611,21 @@ class GameMode(Mode):
                         else:
                             mode.board.whiteKingPosition = (row,col)
 
-    #complete function that only moves piece if legal by check and chess laws
+    #complete function that only moves piece if legal by check and chess laws (REVIEW)
     def completeLegalMove(mode, row, col):
         tempPiece = mode.board.board[row][col]
         (oldRow, oldCol) = mode.selectedPiece.position
         GameMode.movePiece(mode, row, col, oldRow, oldCol)
         #new check
         if(mode.board.check()!='none' and mode.checkExists==False):
-            mode.checkExists = True
             #check on player moving currently
             if((mode.board.check()=='black' and mode.blackTurn) or
                (mode.board.check()=='white' and mode.blackTurn==False)):
                 GameMode.revertMove(mode, row, col, oldRow, oldCol,
                                     tempPiece)
-                mode.checkExists = False
             #check on opponent
             else:
+                mode.checkExists = True
                 GameMode.switchTurns(mode)
         #existing check not removed
         elif(mode.board.check()!='none' and mode.checkExists==True):
@@ -612,6 +635,31 @@ class GameMode(Mode):
         else:
             mode.checkExists = False
             GameMode.switchTurns(mode)
+
+    '''#complete function that only moves piece if legal by check and chess laws 
+    def completeLegalMove(mode, row, col):
+        tempPiece = mode.board.board[row][col]
+        (oldRow, oldCol) = mode.selectedPiece.position
+        GameMode.movePiece(mode, row, col, oldRow, oldCol)
+        #both kings in check
+        if(len(mode.board.check())==3):
+           GameMode.revertMove(mode, row, col, oldRow, oldCol,
+                                    tempPiece)
+        #one king in check
+        elif(len(mode.board.check())==2):
+            #check on player moving currently
+            if((mode.board.check()=='BC' and mode.blackTurn) or
+               (mode.board.check()=='WC' and mode.blackTurn==False)):
+                GameMode.revertMove(mode, row, col, oldRow, oldCol,
+                                    tempPiece)
+            #check on opponent
+            else:
+                mode.checkExists = True
+                GameMode.switchTurns(mode)
+        #no king in check
+        else:
+            mode.checkExists = False
+            GameMode.switchTurns(mode)'''
 
     #moves piece 
     def movePiece(mode, row, col, oldRow, oldCol):
@@ -693,7 +741,7 @@ class GameMode(Mode):
                         boardValue -= piece.value
         return boardValue
         
-    #minimax
+    #minimax no pruning
     def minimax(mode, searchDepth, blackSide, depth=0):
         if(blackSide): whiteSide=False
         else: whiteSide=True
@@ -770,7 +818,7 @@ class GameMode(Mode):
                 GameMode.updatePositions(mode)
             return min(minList)
 
-    #minimax with alpha beta pruning (IN PROGRESS)
+    #minimax with alpha beta pruning
     def pruningMinimax(mode, searchDepth, blackSide, depth=0, alpha=-9999, beta=9999):
         if(blackSide): whiteSide=False
         else: whiteSide=True
@@ -780,8 +828,9 @@ class GameMode(Mode):
             return GameMode.boardValue(mode, mode.board.board, blackSide)
         #FINAL SELECTION
         elif(depth==1):
+            finalChoices = []
             bestValue = -9999
-            bestBoard = None
+            bestBoards = []
             pathValues = {}
             possibleBoards = GameMode.boardGeneration(mode, blackSide)
             if(len(possibleBoards)==0):
@@ -796,21 +845,22 @@ class GameMode(Mode):
                 value = GameMode.pruningMinimax(mode, searchDepth,
                                                 blackSide, depth,
                                                 alpha, beta)
-                if(value<alpha):
-                    break
-                pathValues[str(board)] = value
-                alpha = value
                 #REVERT
                 mode.board.board = myDeepCopy(oldBoard)
                 GameMode.updatePositions(mode)
+                #UPDATE VALUES
+                pathValues[str(board)] = value
+                alpha = value
             for path in pathValues:
                 if pathValues[path] > bestValue:
                     bestValue = pathValues[path]
-                    bestBoard = path
+                    bestBoards = [path]
+                elif pathValues[path] == bestValue:
+                    bestBoards.append(path)
             for board in possibleBoards:
-                if str(board) == bestBoard:
-                    bestBoard = myDeepCopy(board)
-            return bestBoard
+                if str(board) in bestBoards:
+                    finalChoices.append(board)
+            return random.choice(finalChoices)
         #MAX
         elif(depth%2==1):
             maxList=[]
@@ -828,13 +878,14 @@ class GameMode(Mode):
                 value = GameMode.pruningMinimax(mode, searchDepth,
                                                 blackSide, depth,
                                                 alpha, beta)
-                if(value<alpha):
-                    break
-                maxList.append(value)
-                alpha = value
                 #REVERT
                 mode.board.board = myDeepCopy(oldBoard)
                 GameMode.updatePositions(mode)
+                #PRUNING
+                if(value>=beta):
+                    return value
+                maxList.append(value)
+                alpha = value         
             return max(maxList)
         #MIN
         else:
@@ -853,13 +904,14 @@ class GameMode(Mode):
                 value = GameMode.pruningMinimax(mode, searchDepth,
                                                 blackSide, depth,
                                                 alpha, beta)
-                if(value>beta):
-                    break
-                minList.append(value)
-                beta = value
                 #REVERT
                 mode.board.board = myDeepCopy(oldBoard)
                 GameMode.updatePositions(mode)
+                #PRUNING
+                if(value<=alpha):
+                    return value
+                minList.append(value)
+                beta = value
             return min(minList)
                 
     #key control
