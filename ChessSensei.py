@@ -5,7 +5,9 @@
 
 '''
 TO-DO:
-- Upgrade AI
+- Upgrade AI (TP3)
+- Best Move Explanation (TP3)
+- Difficulty (TP3)
 '''
 
 #===============================================================================
@@ -547,6 +549,7 @@ class PvP(Mode):
     #model
     def appStarted(mode):
         scale = mode.app.width/1056
+        #image from http://i.imgur.com/zwF4Lyn.png
         url = 'http://i.imgur.com/zwF4Lyn.png'
         spritestrip = mode.loadImage(url)
         scaledSpritestrip = mode.scaleImage(spritestrip, scale)
@@ -881,7 +884,7 @@ class PvAI(Mode):
     def giveAdvice(mode, blackSide=False):
         print('CALCULATING ADVISED MOVE')
         mode.board.advice = []
-        advisedBoard = myDeepCopy(PvAI.pruningMinimax(mode, 2, blackSide))
+        advisedBoard = myDeepCopy(PvAI.pruningMinimax(mode, 3, blackSide))
         currentBoard = myDeepCopy(mode.board.board)
         for row in range(8):
             for col in range(8):
@@ -954,7 +957,7 @@ class MainMenu(Mode):
                            text='PRESS A FOR MOVE ADVICE',
                            fill='black', font='Times 16')
 
-    #Switches to main game when any key is pressed.
+    #Mode buttons
     def mousePressed(mode, event):
         if (event.x>mode.PvPButton[0] and event.x<mode.PvPButton[2] and
             event.y>mode.PvPButton[1] and event.y<mode.PvPButton[3]):
