@@ -5,9 +5,15 @@
 
 '''
 TO-DO:
-- Upgrade AI (TP3)
-- Best Move Explanation (TP3)
-- Difficulty (TP3)
+- Best Move Explanation M
+- Difficulty M
+- Upgrade UI M
+- File Style M
+- README T
+- Documentation T
+- Video Demo T
+- Timesheet T
+- Upgrade AI (MAYBE)
 '''
 
 #===============================================================================
@@ -666,7 +672,7 @@ class PvP(Mode):
             PvAI.giveAdvice(mode, mode.blackTurn)
         #debug function
         if event.key == 'd':
-            print(mode.checkExists) 
+            print(mode.selectedPiece)
             
     #view
     def redrawAll(mode, canvas):
@@ -884,7 +890,7 @@ class PvAI(Mode):
     def giveAdvice(mode, blackSide=False):
         print('CALCULATING ADVISED MOVE')
         mode.board.advice = []
-        advisedBoard = myDeepCopy(PvAI.pruningMinimax(mode, 3, blackSide))
+        advisedBoard = myDeepCopy(PvAI.pruningMinimax(mode, 2, blackSide))
         currentBoard = myDeepCopy(mode.board.board)
         for row in range(8):
             for col in range(8):
@@ -909,7 +915,7 @@ class PvAI(Mode):
             PvAI.giveAdvice(mode)
         #debug function
         if event.key == 'd':
-            print(mode.checkExists) 
+            print(mode.selectedPiece) 
             
     #view
     def redrawAll(mode, canvas):
