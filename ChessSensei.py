@@ -553,6 +553,127 @@ class Board(object):
 
 #===============================================================================
 
+    #check test
+    def checkTest(self, spritestrip):
+        self.selected = (-1,-1)
+        self.advice = []
+        self.board = [[None] * 8 for i in range(8)]
+        for i in range(8):
+            self.board[1][i] = Pawn(True, (1,i), spritestrip, self.size)
+            self.board[6][i] = Pawn(False, (6,i), spritestrip, self.size)
+        self.board[0][0] = Rook(True, (0,0), spritestrip, self.size)
+        self.board[7][0] = Rook(False, (7,0), spritestrip, self.size)
+        self.board[0][1] = Knight(True, (0,1), spritestrip, self.size)
+        self.board[7][1] = Knight(False, (7,1), spritestrip, self.size)
+        self.board[0][2] = Bishop(True, (0,2), spritestrip, self.size)
+        self.board[7][2] = Bishop(False, (7,2), spritestrip, self.size)
+        self.board[0][3] = Queen(True, (0,3), spritestrip, self.size)
+        self.board[7][3] = Queen(False, (7,3), spritestrip, self.size)
+        self.board[0][4] = King(True, (0,4), spritestrip, self.size)
+        self.board[7][4] = King(False, (7,4), spritestrip, self.size)
+        self.board[0][5] = Bishop(True, (0,5), spritestrip, self.size)
+        self.board[7][5] = Bishop(False, (7,5), spritestrip, self.size)
+        self.board[0][6] = Knight(True, (0,6), spritestrip, self.size)
+        self.board[7][6] = Knight(False, (7,6), spritestrip, self.size)
+        self.board[0][7] = Rook(True, (0,7), spritestrip, self.size)
+        self.board[7][7] = Rook(False, (7,7), spritestrip, self.size)
+        self.blackKingPosition = (0,4)
+        self.whiteKingPosition = (7,4)
+        self.board[1][5] = None
+        self.board[6][4] = None
+
+    #checkmate test
+    def checkmateTest(self, spritestrip):
+        self.selected = (-1,-1)
+        self.advice = []
+        self.board = [[None] * 8 for i in range(8)]
+        for i in range(8):
+            self.board[1][i] = Pawn(True, (1,i), spritestrip, self.size)
+            self.board[6][i] = Pawn(False, (6,i), spritestrip, self.size)
+        self.board[0][0] = Rook(True, (0,0), spritestrip, self.size)
+        self.board[7][0] = Rook(False, (7,0), spritestrip, self.size)
+        self.board[0][1] = Knight(True, (0,1), spritestrip, self.size)
+        self.board[7][1] = Knight(False, (7,1), spritestrip, self.size)
+        self.board[0][2] = Bishop(True, (0,2), spritestrip, self.size)
+        self.board[7][2] = Bishop(False, (7,2), spritestrip, self.size)
+        self.board[0][3] = Queen(True, (0,3), spritestrip, self.size)
+        self.board[7][3] = Queen(False, (7,3), spritestrip, self.size)
+        self.board[0][4] = King(True, (0,4), spritestrip, self.size)
+        self.board[7][4] = King(False, (7,4), spritestrip, self.size)
+        self.board[0][5] = Bishop(True, (0,5), spritestrip, self.size)
+        self.board[7][5] = Bishop(False, (7,5), spritestrip, self.size)
+        self.board[0][6] = Knight(True, (0,6), spritestrip, self.size)
+        self.board[7][6] = Knight(False, (7,6), spritestrip, self.size)
+        self.board[0][7] = Rook(True, (0,7), spritestrip, self.size)
+        self.board[7][7] = Rook(False, (7,7), spritestrip, self.size)
+        self.blackKingPosition = (0,4)
+        self.whiteKingPosition = (7,4)
+        self.board[1][5] = None
+        self.board[1][6] = None
+        self.board[6][4] = None
+
+    #AI test
+    def AITest(self, spritestrip):
+        self.selected = (-1,-1)
+        self.advice = []
+        self.board = [[None] * 8 for i in range(8)]
+        for i in range(8):
+            self.board[1][i] = Pawn(True, (1,i), spritestrip, self.size)
+            self.board[6][i] = Pawn(False, (6,i), spritestrip, self.size)
+        self.board[0][0] = Rook(True, (0,0), spritestrip, self.size)
+        self.board[7][0] = Rook(False, (7,0), spritestrip, self.size)
+        self.board[0][1] = Knight(True, (0,1), spritestrip, self.size)
+        self.board[7][1] = Knight(False, (7,1), spritestrip, self.size)
+        self.board[0][2] = Bishop(True, (0,2), spritestrip, self.size)
+        self.board[3][6] = Bishop(False, (3,6), spritestrip, self.size)
+        self.board[0][3] = Queen(True, (0,3), spritestrip, self.size)
+        self.board[7][2] = Queen(False, (7,2), spritestrip, self.size)
+        self.board[0][4] = King(True, (0,4), spritestrip, self.size)
+        self.board[7][4] = King(False, (7,4), spritestrip, self.size)
+        self.board[0][5] = Bishop(True, (0,5), spritestrip, self.size)
+        self.board[7][5] = Bishop(False, (7,5), spritestrip, self.size)
+        self.board[0][6] = Knight(True, (0,6), spritestrip, self.size)
+        self.board[7][6] = Knight(False, (7,6), spritestrip, self.size)
+        self.board[0][7] = Rook(True, (0,7), spritestrip, self.size)
+        self.board[7][7] = Rook(False, (7,7), spritestrip, self.size)
+        self.blackKingPosition = (0,4)
+        self.whiteKingPosition = (7,4)
+        self.board[1][4] = None
+        self.board[6][3] = None
+        self.board[1][7] = None
+
+    #advice explanation test
+    def explanationTest(self, spritestrip):
+        self.selected = (-1,-1)
+        self.advice = []
+        self.board = [[None] * 8 for i in range(8)]
+        for i in range(8):
+            self.board[1][i] = Pawn(True, (1,i), spritestrip, self.size)
+            self.board[6][i] = Pawn(False, (6,i), spritestrip, self.size)
+        self.board[0][0] = Rook(True, (0,0), spritestrip, self.size)
+        self.board[7][0] = Rook(False, (7,0), spritestrip, self.size)
+        self.board[0][1] = Knight(True, (0,1), spritestrip, self.size)
+        self.board[7][1] = Knight(False, (7,1), spritestrip, self.size)
+        self.board[0][2] = Bishop(True, (0,2), spritestrip, self.size)
+        self.board[7][2] = Bishop(False, (7,2), spritestrip, self.size)
+        self.board[0][4] = Queen(True, (0,4), spritestrip, self.size)
+        self.board[7][3] = Queen(False, (7,3), spritestrip, self.size)
+        self.board[0][3] = King(True, (0,3), spritestrip, self.size)
+        self.board[7][4] = King(False, (7,4), spritestrip, self.size)
+        self.board[3][7] = Bishop(True, (3,7), spritestrip, self.size)
+        self.board[7][5] = Bishop(False, (7,5), spritestrip, self.size)
+        self.board[0][6] = Knight(True, (0,6), spritestrip, self.size)
+        self.board[7][6] = Knight(False, (7,6), spritestrip, self.size)
+        self.board[0][7] = Rook(True, (0,7), spritestrip, self.size)
+        self.board[7][7] = Rook(False, (7,7), spritestrip, self.size)
+        self.blackKingPosition = (0,3)
+        self.whiteKingPosition = (7,4)
+        self.board[1][5] = None
+        self.board[1][6] = None
+        self.board[6][4] = None
+        
+#===============================================================================
+
 class PvP(Mode):
     #model
     def appStarted(mode):
@@ -560,8 +681,8 @@ class PvP(Mode):
         #image from http://i.imgur.com/zwF4Lyn.png
         url = 'http://i.imgur.com/zwF4Lyn.png'
         spritestrip = mode.loadImage(url)
-        scaledSpritestrip = mode.scaleImage(spritestrip, scale)
-        mode.board = Board(scaledSpritestrip, scale)
+        mode.scaledSpritestrip = mode.scaleImage(spritestrip, scale)
+        mode.board = Board(mode.scaledSpritestrip, scale)
         mode.selectedPiece = None
         mode.blackTurn = False
         mode.checkExists = False
@@ -668,6 +789,9 @@ class PvP(Mode):
                 
     #key control
     def keyPressed(mode, event):
+        #reset
+        if event.key == 'r':
+            PvP.appStarted(mode)
         #menu function
         if event.key == 'm':
             PvP.appStarted(mode)
@@ -675,9 +799,31 @@ class PvP(Mode):
         #advice function
         if event.key == 'a' and mode.gameOver == False:
             PvAI.giveAdvice(mode, mode.blackTurn)
-        #clear message
+        #clear
         if event.key == 'c':
             mode.message = ''
+            mode.board.selected = (-1,-1)
+            mode.board.advice = []
+        #check test case
+        if event.key == '1':
+            mode.board.checkTest(mode.scaledSpritestrip)
+            PvP.updatePositions(mode)
+            PvP.checkUpdate(mode)
+        #checkmate test case
+        if event.key == '2':
+            mode.board.checkmateTest(mode.scaledSpritestrip)
+            PvP.updatePositions(mode)
+            PvP.checkUpdate(mode)
+        #AI test case
+        if event.key == '3':
+            mode.board.AITest(mode.scaledSpritestrip)
+            PvP.updatePositions(mode)
+            PvP.checkUpdate(mode)
+        #explanation test case
+        if event.key == '4':
+            mode.board.explanationTest(mode.scaledSpritestrip)
+            PvP.updatePositions(mode)
+            PvP.checkUpdate(mode)
 
     #checkmate detection
     def checkmateDetection(mode, blackSide):
@@ -725,8 +871,8 @@ class PvAI(Mode):
         scale = (mode.app.width-(mode.app.width//16))/1056
         url = 'http://i.imgur.com/zwF4Lyn.png'
         spritestrip = mode.loadImage(url)
-        scaledSpritestrip = mode.scaleImage(spritestrip, scale)
-        mode.board = Board(scaledSpritestrip, scale)
+        mode.scaledSpritestrip = mode.scaleImage(spritestrip, scale)
+        mode.board = Board(mode.scaledSpritestrip, scale)
         mode.selectedPiece = None
         mode.blackTurn = False
         mode.checkExists = False
@@ -999,10 +1145,13 @@ class PvAI(Mode):
         mode.message = (f'''
   If you move {yourMoveStart[0]}{yourMoveStart[1]} to {yourMoveEnd[0]}{yourMoveEnd[1]} for the short term benefit,\n
 then your opponent will move {opponentMoveStart[0]}{opponentMoveStart[1]} to {opponentMoveEnd[0]}{opponentMoveEnd[1]} to counter.\n
-                            Always think ahead!''')
+                          Always think ahead!''')
         
     #key control
     def keyPressed(mode, event):
+        #reset
+        if event.key == 'r':
+            PvP.appStarted(mode)
         #menu function
         if event.key == 'm':
             PvAI.appStarted(mode)
@@ -1010,9 +1159,31 @@ then your opponent will move {opponentMoveStart[0]}{opponentMoveStart[1]} to {op
         #advice function
         if event.key=='a' and mode.blackTurn==False and mode.gameOver==False:
             PvAI.giveAdvice(mode)
-        #clear message
+        #clear
         if event.key == 'c':
             mode.message = ''
+            mode.board.selected = (-1,-1)
+            mode.board.advice = []
+        #check test case
+        if event.key == '1':
+            mode.board.checkTest(mode.scaledSpritestrip)
+            PvP.updatePositions(mode)
+            PvP.checkUpdate(mode)
+        #checkmate test case
+        if event.key == '2':
+            mode.board.checkmateTest(mode.scaledSpritestrip)
+            PvP.updatePositions(mode)
+            PvP.checkUpdate(mode)
+        #AI test case
+        if event.key == '3':
+            mode.board.AITest(mode.scaledSpritestrip)
+            PvP.updatePositions(mode)
+            PvP.checkUpdate(mode)
+        #explanation test case
+        if event.key == '4':
+            mode.board.explanationTest(mode.scaledSpritestrip)
+            PvP.updatePositions(mode)
+            PvP.checkUpdate(mode)
             
     #view
     def redrawAll(mode, canvas):
