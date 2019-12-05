@@ -4,16 +4,18 @@
 #===============================================================================
 
 '''
-TO-DO:
-- Best Move Explanation M
-- Difficulty M
-- Upgrade UI M
-- File Style M
-- README T
-- Documentation T
-- Video Demo T
-- Timesheet T
-- Upgrade AI (MAYBE)
+(Only used tkinter and pillow)
+KEY FEATURES:
+1. Menu user interface
+2. Chess user interface
+3. Highlights legal chess moves for beginners
+4. Player versus player mode
+5. Check and checkmate detection
+6. Player versus custom AI mode
+7. AI difficulty
+8. Advice function
+9. Advice explanation display
+10. Scalable GUI for different devices
 '''
 
 #===============================================================================
@@ -485,7 +487,7 @@ class Board(object):
     def __repr__(self):
         return str(print2dList(self.board))
 
-    #determines if either king is in check (!)
+    #determines if either king is in check 
     def check(self):
         for row in range(8):
             for col in range(8):
@@ -554,7 +556,7 @@ class Board(object):
 class PvP(Mode):
     #model
     def appStarted(mode):
-        scale = mode.app.width/1056
+        scale = (mode.app.width-(mode.app.width//16))/1056
         #image from http://i.imgur.com/zwF4Lyn.png
         url = 'http://i.imgur.com/zwF4Lyn.png'
         spritestrip = mode.loadImage(url)
@@ -563,6 +565,10 @@ class PvP(Mode):
         mode.selectedPiece = None
         mode.blackTurn = False
         mode.checkExists = False
+        mode.message = 'WHITE MAY MOVE'
+        mode.columns = ['A','B','C','D','E','F','G','H']
+        mode.rows = ['8','7','6','5','4','3','2','1']
+        mode.gameOver = False
         
     #player moves
     def mousePressed(mode, event):
@@ -577,9 +583,11 @@ class PvP(Mode):
             (row,col) in mode.selectedPiece.legalMoves(mode.board.board)):
                 PvP.completeLegalMove(mode, row, col)
                 if mode.blackTurn:
-                    print('BLACK MAY MOVE')
+                    mode.message = 'BLACK MAY MOVE'
                 else:
-                    print('WHITE MAY MOVE')
+                    mode.message = 'WHITE MAY MOVE'
+            #checkmate display
+            PvP.checkmateDetection(mode, mode.blackTurn)
             #remove selection
             mode.board.selected = (-1,-1)
             mode.selectedPiece = None
@@ -597,7 +605,7 @@ class PvP(Mode):
                         else:
                             mode.board.whiteKingPosition = (row,col)
 
-    #moves piece if legal by chess laws (!)
+    #moves piece if legal by chess laws 
     def completeLegalMove(mode, row, col):
         tempPiece = mode.board.board[row][col]
         (oldRow, oldCol) = mode.selectedPiece.position
@@ -660,32 +668,61 @@ class PvP(Mode):
                 
     #key control
     def keyPressed(mode, event):
-        #cancel selection
-        if event.key == 'c':
-            mode.board.selected = (-1,-1)
-            mode.selectedPiece = None
         #menu function
         if event.key == 'm':
+            PvP.appStarted(mode)
             mode.app.setActiveMode(mode.app.mainMenu)
         #advice function
-        if event.key == 'a':
+        if event.key == 'a' and mode.gameOver == False:
             PvAI.giveAdvice(mode, mode.blackTurn)
-        #debug function
-        if event.key == 'd':
-            print(mode.selectedPiece)
-            
+        #clear message
+        if event.key == 'c':
+            mode.message = ''
+
+    #checkmate detection
+    def checkmateDetection(mode, blackSide):
+        possibleBoards = PvAI.boardGeneration(mode, blackSide)
+        if len(possibleBoards) == 0:
+            mode.gameOver = True
+            if blackSide:
+                mode.message = 'WHITE WINS. PRESS M FOR NEW GAME.'
+            else:
+                mode.message = 'BLACK WINS. PRESS M FOR NEW GAME.'
+
+    #drawPositionKeys
+    def drawPositionKeys(mode, canvas):
+        for index in range(len(mode.columns)):
+            canvas.create_text(((((mode.width-(mode.width//17))//8)*index)+
+                                ((mode.width-(mode.width//17))//8)*0.5),
+                                mode.height-(mode.height//5),
+                                text = mode.columns[index], fill = 'white',
+                                font = f'Times {mode.width//100}')
+            canvas.create_text(mode.width-(mode.width//17),
+                               ((((mode.height-(mode.height//5))//8)*index)+
+                                ((mode.height-(mode.height//5))//8)*0.5),
+                                text = mode.rows[index], fill = 'white',
+                                font = f'Times {mode.width//100}')
     #view
     def redrawAll(mode, canvas):
+        canvas.create_rectangle(0,0,mode.width,mode.height,
+                                fill='maroon',outline='black',
+                                width=mode.width//100)
         mode.board.draw(canvas)
+        PvP.drawPositionKeys(mode, canvas)
+        canvas.create_text(mode.width/2, mode.height*9//10,
+                           text=mode.message,
+                           fill='white', font=f'Times {mode.width//50}')
         if mode.selectedPiece != None:
             mode.board.drawLegalMoves(mode.selectedPiece, canvas)
 
 #===============================================================================
 
+difficulty = 0
+
 class PvAI(Mode):
     #model
     def appStarted(mode):
-        scale = mode.app.width/1056
+        scale = (mode.app.width-(mode.app.width//16))/1056
         url = 'http://i.imgur.com/zwF4Lyn.png'
         spritestrip = mode.loadImage(url)
         scaledSpritestrip = mode.scaleImage(spritestrip, scale)
@@ -694,6 +731,10 @@ class PvAI(Mode):
         mode.blackTurn = False
         mode.checkExists = False
         mode.oldBoard = mode.board.board
+        mode.message = 'WHITE MAY MOVE'
+        mode.columns = ['A','B','C','D','E','F','G','H']
+        mode.rows = ['8','7','6','5','4','3','2','1']
+        mode.gameOver = False
         
     #your move
     def mousePressed(mode, event):
@@ -711,15 +752,16 @@ class PvAI(Mode):
             #remove selection
             mode.board.selected = (-1,-1)
             mode.selectedPiece = None
+            if(mode.blackTurn and mode.oldBoard != mode.board.board):
+                mode.message = 'AI IS THINKING...'
 
     #AI move
     def mouseReleased(mode, event):
         if(mode.blackTurn and mode.oldBoard != mode.board.board):
-            print('AI IS THINKING')
             mode.oldBoard = myDeepCopy(mode.board.board)
             #minimax move
             mode.board.board = myDeepCopy(
-                PvAI.pruningMinimax(mode, 3, True))
+                PvAI.pruningMinimax(mode, difficulty, True))
             #manual updates
             PvP.updatePositions(mode)
             PvP.checkUpdate(mode)
@@ -727,8 +769,7 @@ class PvAI(Mode):
             #remove selection
             mode.board.selected = (-1,-1)
             mode.selectedPiece = None
-            print('AI HAS MOVED')
-            print('YOUR MOVE')
+            mode.message = 'AI HAS MOVED. YOUR MOVE.'
 
     #generates all possible boards for one state
     def boardGeneration(mode, blackSide=True):
@@ -799,7 +840,7 @@ class PvAI(Mode):
             pathValues = {}
             possibleBoards = PvAI.boardGeneration(mode, blackSide)
             if(len(possibleBoards)==0):
-                print('FINAL CHECKMATE')
+                mode.message = 'YOU WIN'
             for board in possibleBoards:
                 oldBoard = myDeepCopy(mode.board.board)
                 #NEW BOARD
@@ -834,7 +875,6 @@ class PvAI(Mode):
             maxList=[]
             possibleBoards = PvAI.boardGeneration(mode, blackSide)
             if(len(possibleBoards)==0):
-                print('AVOIDED CHECKMATE')
                 return 9999
             for board in possibleBoards:
                 oldBoard = myDeepCopy(mode.board.board)
@@ -862,7 +902,6 @@ class PvAI(Mode):
             minList=[]
             possibleBoards = PvAI.boardGeneration(mode, whiteSide)
             if(len(possibleBoards)==0):
-                print('PREDICTED CHECKMATE')
                 return 9999
             for board in possibleBoards:
                 oldBoard = myDeepCopy(mode.board.board)
@@ -888,7 +927,8 @@ class PvAI(Mode):
 
     #advice function
     def giveAdvice(mode, blackSide=False):
-        print('CALCULATING ADVISED MOVE')
+        if(blackSide): whiteSide=False
+        else: whiteSide=True
         mode.board.advice = []
         advisedBoard = myDeepCopy(PvAI.pruningMinimax(mode, 2, blackSide))
         currentBoard = myDeepCopy(mode.board.board)
@@ -896,32 +936,153 @@ class PvAI(Mode):
             for col in range(8):
                 if currentBoard[row][col] != advisedBoard[row][col]:
                     mode.board.advice.append((row, col))
-        mode.blackTurn = blackSide
-        mode.board.selected = (-1,-1)
-        mode.selectedPiece = None
-        print('HIGHLIGHTING ADVISED MOVE')
-                
-    #key control
-    def keyPressed(mode, event):
-        #cancel selection
-        if event.key == 'c':
+        #checkmate advice
+        currentCheck = mode.checkExists
+        mode.board.board = myDeepCopy(advisedBoard)
+        PvP.checkUpdate(mode)
+        possibleBoards = PvAI.boardGeneration(mode, whiteSide)
+        mode.board.board = myDeepCopy(currentBoard)
+        mode.checkExists = currentCheck
+        if len(possibleBoards) == 0:
+            mode.message = ('''You can checkmate your opponent.\n
+   Always watch the enemy king!''')
+            mode.blackTurn = blackSide
             mode.board.selected = (-1,-1)
             mode.selectedPiece = None
+            return None
+        #obvious move with no long term harm
+        beginnerBoard = myDeepCopy(PvAI.pruningMinimax(mode, 1, blackSide))
+        mode.blackTurn = blackSide
+        if beginnerBoard != advisedBoard:
+            PvAI.adviceExplanation(mode, blackSide)
+        else:
+            mode.message = 'I foresee no immediate losses with this move.'
+        mode.board.selected = (-1,-1)
+        mode.selectedPiece = None
+
+    #advice explanation
+    def adviceExplanation(mode, blackSide=False):
+        mode.blackTurn = blackSide
+        if(blackSide): whiteSide=False
+        else: whiteSide=True
+        yourMove = []
+        originalBoard = myDeepCopy(mode.board.board)
+        mode.board.board = myDeepCopy(PvAI.pruningMinimax(mode, 1, blackSide))
+        for row in range(8):
+            for col in range(8):
+                if (mode.board.board[row][col] != originalBoard[row][col]
+                    and mode.board.board[row][col] != None):
+                    yourMove.append((row, col))
+                elif (mode.board.board[row][col] != originalBoard[row][col]
+                    and originalBoard[row][col] != None):
+                    yourMove.insert(0, (row, col))
+        opponentMove = []
+        middleBoard = myDeepCopy(mode.board.board)
+        mode.board.board = myDeepCopy(PvAI.pruningMinimax(mode, 1, whiteSide))
+        for row in range(8):
+            for col in range(8):
+                if (mode.board.board[row][col] != middleBoard[row][col]
+                    and mode.board.board[row][col] != None):
+                    opponentMove.append((row, col))
+                elif (mode.board.board[row][col] != middleBoard[row][col]
+                    and middleBoard[row][col] != None):
+                    opponentMove.insert(0, (row, col))
+        mode.board.board = myDeepCopy(originalBoard)
+        yourMoveStart = (mode.columns[yourMove[0][1]],
+                         mode.rows[yourMove[0][0]])
+        yourMoveEnd = (mode.columns[yourMove[1][1]],
+                         mode.rows[yourMove[1][0]])
+        opponentMoveStart = (mode.columns[opponentMove[0][1]],
+                         mode.rows[opponentMove[0][0]])
+        opponentMoveEnd = (mode.columns[opponentMove[1][1]],
+                         mode.rows[opponentMove[1][0]])
+        mode.message = (f'''
+  If you move {yourMoveStart[0]}{yourMoveStart[1]} to {yourMoveEnd[0]}{yourMoveEnd[1]} for the short term benefit,\n
+then your opponent will move {opponentMoveStart[0]}{opponentMoveStart[1]} to {opponentMoveEnd[0]}{opponentMoveEnd[1]} to counter.\n
+                            Always think ahead!''')
+        
+    #key control
+    def keyPressed(mode, event):
         #menu function
         if event.key == 'm':
+            PvAI.appStarted(mode)
             mode.app.setActiveMode(mode.app.mainMenu)
         #advice function
-        if event.key == 'a' and mode.blackTurn==False:
+        if event.key=='a' and mode.blackTurn==False and mode.gameOver==False:
             PvAI.giveAdvice(mode)
-        #debug function
-        if event.key == 'd':
-            print(mode.selectedPiece) 
+        #clear message
+        if event.key == 'c':
+            mode.message = ''
             
     #view
     def redrawAll(mode, canvas):
+        canvas.create_rectangle(0,0,mode.width,mode.height,
+                                fill='maroon',outline='black',
+                                width=mode.width//100)
         mode.board.draw(canvas)
+        PvP.drawPositionKeys(mode, canvas)
+        canvas.create_text(mode.width/2, mode.height*9//10,
+                           text=mode.message,
+                           fill='white', font=f'Times {mode.width//50}')
         if mode.selectedPiece != None:
             mode.board.drawLegalMoves(mode.selectedPiece, canvas)
+
+#===============================================================================
+
+class DifficultyMenu(Mode):
+    def appStarted(mode):
+        mode.easy = (mode.width//4, mode.height//2-mode.height//4,
+                     (mode.width*3)//4, mode.height//2-mode.height//8)
+        mode.medium = (mode.width//4, mode.height//2-mode.height//16,
+                     (mode.width*3)//4, mode.height//2+mode.height//16)
+        mode.hard = (mode.width//4, mode.height//2+mode.height//8,
+                     (mode.width*3)//4, mode.height//2+mode.height//4)
+    
+    def redrawAll(mode, canvas):
+        canvas.create_rectangle(0,0,mode.width,mode.height,
+                                fill='maroon',outline='black',
+                                width=mode.width//100)
+        canvas.create_rectangle(mode.easy[0],mode.easy[1],
+                                mode.easy[2],mode.easy[3],
+                                fill='black',outline='white',
+                                width=mode.width//200)
+        canvas.create_text(mode.width/2, mode.height//2-(mode.height*3)//16,
+                           text='Easy',
+                           fill='white', font=f'Times {mode.width//35}')
+        canvas.create_rectangle(mode.medium[0],mode.medium[1],
+                                mode.medium[2],mode.medium[3],
+                                fill='black',outline='white',
+                                width=mode.width//200)
+        canvas.create_text(mode.width/2, mode.height//2,
+                           text='Medium',
+                           fill='white', font=f'Times {mode.width//35}')
+        canvas.create_rectangle(mode.hard[0],mode.hard[1],
+                                mode.hard[2],mode.hard[3],
+                                fill='black',outline='white',
+                                width=mode.width//200)
+        canvas.create_text(mode.width/2, mode.height//2+(mode.height*3)//16,
+                           text='Hard',
+                           fill='white', font=f'Times {mode.width//35}')
+
+    #Difficulty buttons
+    def mousePressed(mode, event):
+        global difficulty
+        if (event.x>mode.easy[0] and event.x<mode.easy[2] and
+            event.y>mode.easy[1] and event.y<mode.easy[3]):
+            difficulty = 1
+            mode.app.setActiveMode(mode.app.PvAI)
+        if (event.x>mode.medium[0] and event.x<mode.medium[2] and
+            event.y>mode.medium[1] and event.y<mode.medium[3]):
+            difficulty = 2
+            mode.app.setActiveMode(mode.app.PvAI)
+        if (event.x>mode.hard[0] and event.x<mode.hard[2] and
+            event.y>mode.hard[1] and event.y<mode.hard[3]):
+            difficulty = 3
+            mode.app.setActiveMode(mode.app.PvAI)
+
+    def keyPressed(mode, event):
+        if event.key == 'm':
+            mode.app.setActiveMode(mode.app.mainMenu)
 
 #===============================================================================
 
@@ -940,28 +1101,32 @@ class MainMenu(Mode):
                                 width=mode.width//100)
         canvas.create_rectangle(mode.title[0],mode.title[1],
                                 mode.title[2],mode.title[3],
-                                fill='black')
+                                fill='black',outline='white',
+                                width=mode.width//200)
         canvas.create_text(mode.width/2, mode.height//2-(mode.height*3)//16,
                            text='ChessSensei',
-                           fill='white', font='Times 32 bold underline')
+                           fill='white',
+                           font=f'Times {mode.width//27} bold underline')
         canvas.create_rectangle(mode.PvPButton[0],mode.PvPButton[1],
                                 mode.PvPButton[2],mode.PvPButton[3],
-                                fill='black')
+                                fill='black',outline='white',
+                                width=mode.width//200)
         canvas.create_text(mode.width/2, mode.height//2,
                            text='Player vs Player',
-                           fill='white', font='Times 24')
+                           fill='white', font=f'Times {mode.width//35}')
         canvas.create_rectangle(mode.PvAIButton[0],mode.PvAIButton[1],
                                 mode.PvAIButton[2],mode.PvAIButton[3],
-                                fill='black')
+                                fill='black',outline='white',
+                                width=mode.width//200)
         canvas.create_text(mode.width/2, mode.height//2+(mode.height*3)//16,
                            text='Player vs AI',
-                           fill='white', font='Times 24')
+                           fill='white', font=f'Times {mode.width//35}')
         canvas.create_text(mode.width/2, mode.height//2+(mode.height*3)//8,
                            text='PRESS M TO RETURN TO MENU',
-                           fill='black', font='Times 16')
+                           fill='black', font=f'Times {mode.width//53}')
         canvas.create_text(mode.width/2, mode.height//2+(mode.height*7)//17,
                            text='PRESS A FOR MOVE ADVICE',
-                           fill='black', font='Times 16')
+                           fill='black', font=f'Times {mode.width//53}')
 
     #Mode buttons
     def mousePressed(mode, event):
@@ -970,7 +1135,7 @@ class MainMenu(Mode):
             mode.app.setActiveMode(mode.app.PvP)
         if (event.x>mode.PvAIButton[0] and event.x<mode.PvAIButton[2] and
             event.y>mode.PvAIButton[1] and event.y<mode.PvAIButton[3]):
-            mode.app.setActiveMode(mode.app.PvAI)
+            mode.app.setActiveMode(mode.app.difficultyMenu)
 
 #===============================================================================
 
@@ -978,6 +1143,7 @@ class MainMenu(Mode):
 class ChessSensei(ModalApp):
     def appStarted(app):
         app.mainMenu = MainMenu()
+        app.difficultyMenu = DifficultyMenu()
         app.PvP = PvP()
         app.PvAI = PvAI()
         app.setActiveMode(app.mainMenu)
@@ -985,6 +1151,6 @@ class ChessSensei(ModalApp):
 #changeable size        
 def runChessSensei():
     size = 800
-    app = ChessSensei(width=size, height=size)
+    app = ChessSensei(width=size+(size//16), height=size+(size//4))
 
 runChessSensei()
