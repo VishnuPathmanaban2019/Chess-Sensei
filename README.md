@@ -1,5 +1,9 @@
 # Chess-Sensei
 
+Project Demo: https://www.youtube.com/watch?v=ZIEnsMQApgI&feature=youtu.be
+
+![image](https://i.imgur.com/ocxdTgN.png)
+
 A short description of the project's name and what it does:
 ==============================================================================
 The name of my term project is “ChessSensei”. ChessSensei is a chess software 
