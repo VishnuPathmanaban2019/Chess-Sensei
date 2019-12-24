@@ -15,7 +15,7 @@ Run the "main.py" file to run the project.
 
 Which libraries you're using that need to be installed:
 ==============================================================================
-I am using tkinter, pillow, and cmu_112_graphics.
+I am using tkinter and pillow.
 
 A list of any shortcut commands that exist:
 ==============================================================================
