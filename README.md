@@ -6,12 +6,11 @@ Project Demo: https://www.youtube.com/watch?v=ZIEnsMQApgI&feature=youtu.be
 
 A short description of the project's name and what it does:
 ==============================================================================
-The name of my term project is “ChessSensei”. ChessSensei is a chess software 
-package with two modes: player versus player and player versus AI. And at the 
-user’s request, the ChessSensei AI will give the player advice on what moves 
-they should make and explain why they should make those moves. Essentially, 
-the software pushes beginners to start thinking like chess players and gain 
-experience.
+ChessSensei is a chess software package with two modes: player versus player 
+and player versus AI. And at the user’s request, the ChessSensei AI will give
+the player advice on what moves they should make and explain why they should 
+make those moves. Essentially, the software pushes beginners to start thinking 
+like chess players and gain experience.
 
 How to run the project:
 ==============================================================================
