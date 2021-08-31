@@ -17,7 +17,7 @@ How to run the project:
 ==============================================================================
 Run the "main.py" file to run the project.
 
-Which libraries you're using that need to be installed:
+Which libraries I'm using that need to be installed:
 ==============================================================================
 I am using tkinter and pillow.
 
