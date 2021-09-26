@@ -6,7 +6,7 @@ Project Demo: https://www.youtube.com/watch?v=ZIEnsMQApgI&feature=youtu.be
 
 A short description of the project's name and what it does:
 ==============================================================================
-ChessSensei is a chess software package with two modes: player versus player 
+ChessSensei is a chess interface with two modes: player versus player 
 and player versus AI. At the user’s request, the ChessSensei AI will advise 
 the player with a suggested move while also explaining the logic behind that 
 move in a verbal message. The AI finds its suggested move with a modified 
